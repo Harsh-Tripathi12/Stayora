@@ -32,7 +32,7 @@ The project focuses on secure authentication, property management, user reviews,
 
 Explore the current version of Stayora:
 
-[View Live Demo](https://majorproject-1km4.onrender.com/listings)
+[View Live Demo](https://stayora-inrw.onrender.com/listings)
 
 ## Project Status
 
