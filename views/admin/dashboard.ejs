@@ -1,0 +1,205 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h2><i class="fa-solid fa-shield-halved text-danger me-2"></i>Admin Control Center</h2>
+            <p class="text-muted mb-0">Manage, edit, or delete any listings and reviews with universal administrator privileges.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/listings/new" class="btn btn-primary"><i class="fa-solid fa-plus me-1"></i> Add New Listing</a>
+            <a href="/listings" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i> Browse Site</a>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-4">
+            <div class="card border-0 shadow-sm bg-light text-center p-3">
+                <div class="card-body">
+                    <i class="fa-solid fa-hotel fa-2x text-primary mb-2"></i>
+                    <h5 class="card-title text-muted">Total Listings</h5>
+                    <h2 class="fw-bold mb-0"><%= listingsCount %></h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card border-0 shadow-sm bg-light text-center p-3">
+                <div class="card-body">
+                    <i class="fa-solid fa-comments fa-2x text-warning mb-2"></i>
+                    <h5 class="card-title text-muted">Total Reviews</h5>
+                    <h2 class="fw-bold mb-0"><%= reviewsCount %></h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card border-0 shadow-sm bg-light text-center p-3">
+                <div class="card-body">
+                    <i class="fa-solid fa-users fa-2x text-success mb-2"></i>
+                    <h5 class="card-title text-muted">Total Users</h5>
+                    <h2 class="fw-bold mb-0"><%= usersCount %></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="listings-tab" data-bs-toggle="tab" data-bs-target="#listings-panel" type="button" role="tab">
+                <i class="fa-solid fa-list me-1"></i> Listings / Hotels (<%= listingsCount %>)
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews-panel" type="button" role="tab">
+                <i class="fa-solid fa-comment-dots me-1"></i> Reviews Moderation (<%= reviewsCount %>)
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="adminTabsContent">
+        <!-- Listings Tab -->
+        <div class="tab-pane fade show active" id="listings-panel" role="tabpanel">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0 fw-bold">All Listings</h5>
+                    <small class="text-muted">You can edit or delete any hotel post if information is wrong or inappropriate.</small>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 70px;">Image</th>
+                                    <th>Title</th>
+                                    <th>Location</th>
+                                    <th>Price</th>
+                                    <th>Owner</th>
+                                    <th>Reviews</th>
+                                    <th class="text-end" style="min-width: 170px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (listings && listings.length > 0) { %>
+                                    <% for (let item of listings) { %>
+                                    <tr>
+                                        <td>
+                                            <img 
+                                                src="<%= typeof item.image === 'string' ? item.image : (item.image?.url || 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=800&q=60') %>" 
+                                                alt="<%= item.title %>" 
+                                                class="rounded" 
+                                                style="width: 50px; height: 50px; object-fit: cover;"
+                                            />
+                                        </td>
+                                        <td>
+                                            <a href="/listings/<%= item._id %>" class="fw-semibold text-decoration-none text-dark">
+                                                <%= item.title %>
+                                            </a>
+                                        </td>
+                                        <td><%= item.location %>, <%= item.country %></td>
+                                        <td>&#8377; <%= item.price ? item.price.toLocaleString("en-IN") : "0" %></td>
+                                        <td>
+                                            <span class="badge bg-secondary">
+                                                <%= item.owner ? item.owner.username : 'Unknown' %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info text-dark">
+                                                <%= item.reviews ? item.reviews.length : 0 %>
+                                            </span>
+                                        </td>
+                                        <td class="text-end">
+                                            <a href="/listings/<%= item._id %>" class="btn btn-sm btn-outline-primary me-1" title="View Listing">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </a>
+                                            <a href="/listings/<%= item._id %>/edit" class="btn btn-sm btn-outline-secondary me-1" title="Edit Listing">
+                                                <i class="fa-solid fa-pen-to-square"></i> Edit
+                                            </a>
+                                            <form method="POST" action="/admin/listings/<%= item._id %>?_method=DELETE" class="d-inline" onsubmit="return confirm('Are you sure you want to delete listing \'<%= item.title %>\'?');">
+                                                <button class="btn btn-sm btn-outline-danger" title="Delete Listing">
+                                                    <i class="fa-solid fa-trash"></i> Delete
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    <% } %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="7" class="text-center py-4 text-muted">No listings found.</td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reviews Tab -->
+        <div class="tab-pane fade" id="reviews-panel" role="tabpanel">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0 fw-bold">All User Reviews</h5>
+                    <small class="text-muted">Review moderation: Delete fake, rude, or incorrect reviews across all listings.</small>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Listing</th>
+                                    <th>Reviewer</th>
+                                    <th>Rating</th>
+                                    <th>Comment</th>
+                                    <th class="text-end" style="min-width: 120px;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (reviewsWithListings && reviewsWithListings.length > 0) { %>
+                                    <% for (let entry of reviewsWithListings) { %>
+                                    <tr>
+                                        <td>
+                                            <a href="/listings/<%= entry.listing._id %>" class="text-decoration-none fw-semibold">
+                                                <%= entry.listing.title %>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-light text-dark border">
+                                                @<%= entry.review.author ? entry.review.author.username : 'Unknown' %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="text-warning">
+                                                <% for (let s = 1; s <= 5; s++) { %>
+                                                    <i class="fa-<%= s <= entry.review.rating ? 'solid' : 'regular' %> fa-star"></i>
+                                                <% } %>
+                                            </span>
+                                            <small class="text-muted">(<%= entry.review.rating %>)</small>
+                                        </td>
+                                        <td style="max-width: 350px;">
+                                            <p class="mb-0 text-truncate" title="<%= entry.review.comment %>">
+                                                <%= entry.review.comment %>
+                                            </p>
+                                        </td>
+                                        <td class="text-end">
+                                            <form method="POST" action="/admin/reviews/<%= entry.listing._id %>/<%= entry.review._id %>?_method=DELETE" class="d-inline" onsubmit="return confirm('Delete this review permanently?');">
+                                                <button class="btn btn-sm btn-danger">
+                                                    <i class="fa-solid fa-trash me-1"></i> Delete
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    <% } %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4 text-muted">No reviews found to moderate.</td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

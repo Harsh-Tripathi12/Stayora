@@ -7,8 +7,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "seed": "node init/index.js",
+    "dev": "nodemon app.js",
     "start": "node app.js",
+    "build": "node -e \"console.log('Build completed successfully')\"",
+    "seed": "node init/index.js",
+    "create-admin": "node init/createAdmin.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -35,5 +38,8 @@
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "passport-local-mongoose": "^9.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
   }
 }

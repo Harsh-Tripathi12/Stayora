@@ -1,10 +1,18 @@
 const Listing = require("./models/listing");
 const Review = require("./models/review");
 
-module.exports.isLoggedIn = (req, res, next)=>{
-    if (!req.isAuthenticated()){
+const checkIsAdmin = (user) => {
+    if (!user) return false;
+    const adminUsername = process.env.ADMIN_USERNAME || "admin";
+    return Boolean(user.isAdmin || user.username === adminUsername);
+};
+
+module.exports.checkIsAdmin = checkIsAdmin;
+
+module.exports.isLoggedIn = (req, res, next) => {
+    if (!req.isAuthenticated()) {
         req.session.redirectUrl = req.originalUrl;
-        req.flash("error", "you must be logged in to create listing!");
+        req.flash("error", "You must be logged in!");
         return res.redirect("/login");
     }
     next();
@@ -17,6 +25,13 @@ module.exports.saveRedirectUrl = (req, res, next) => {
     next();
 };
 
+module.exports.isAdmin = (req, res, next) => {
+    if (!req.isAuthenticated() || !checkIsAdmin(req.user)) {
+        req.flash("error", "You must have Admin privileges to access this!");
+        return res.redirect("/listings");
+    }
+    next();
+};
 
 module.exports.isOwner = async (req, res, next) => {
     const { id } = req.params;
@@ -26,7 +41,11 @@ module.exports.isOwner = async (req, res, next) => {
             req.flash("error", "Listing not found");
             return res.redirect("/listings");
         }
-        if (!req.user || !listing.owner || listing.owner.toString() !== req.user._id.toString()) {
+
+        const isUserAdmin = checkIsAdmin(req.user);
+        const isListingOwner = req.user && listing.owner && listing.owner.toString() === req.user._id.toString();
+
+        if (!isListingOwner && !isUserAdmin) {
             req.flash("error", "You do not have permission to do that");
             return res.redirect(`/listings/${id}`);
         }
@@ -36,7 +55,6 @@ module.exports.isOwner = async (req, res, next) => {
     }
 };
 
-
 module.exports.isReviewAuthor = async (req, res, next) => {
     const { reviewId, id } = req.params;
     try {
@@ -45,7 +63,11 @@ module.exports.isReviewAuthor = async (req, res, next) => {
             req.flash("error", "Review not found");
             return res.redirect(`/listings/${id}`);
         }
-        if (!req.user || !review.author || review.author.toString() !== req.user._id.toString()) {
+
+        const isUserAdmin = checkIsAdmin(req.user);
+        const isAuthor = req.user && review.author && review.author.toString() === req.user._id.toString();
+
+        if (!isAuthor && !isUserAdmin) {
             req.flash("error", "You do not have permission to do that");
             return res.redirect(`/listings/${id}`);
         }

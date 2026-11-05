@@ -17,15 +17,19 @@
             <p class="card-text">
                 &#8377; <%= listing.price.toLocaleString("en-IN") %>
             </p>
-            <p class="card-text"><%= listing. location %></p>
+            <p class="card-text"><%= listing.location %></p>
             <p class="card-text"><%= listing.country %></p>          
         </div>
     </div>
-    <% if (currUser && listing.owner && listing.owner._id && listing.owner._id.toString() === currUser._id.toString()) { %>
+    <% 
+        const isListingOwner = currUser && listing.owner && listing.owner._id && listing.owner._id.toString() === currUser._id.toString();
+        const isAdminUser = Boolean(currUser && currUser.isAdmin);
+        if (isListingOwner || isAdminUser) { 
+    %>
     <div class="btns">
         <a href="/listings/<%= listing._id %>/edit"
             class="btn btn-dark col-3 offset-3 edit-btn"> 
-            Edit
+            Edit <%= isAdminUser && !isListingOwner ? '(Admin)' : '' %>
         </a>
 
         <form 
@@ -34,7 +38,7 @@
             class="col-3">
 
             <button class="btn btn-dark w-100 ms-3 delete-btn">
-                Delete
+                Delete <%= isAdminUser && !isListingOwner ? '(Admin)' : '' %>
             </button>
         </form>
     </div>
@@ -48,7 +52,6 @@
     
             <div class="mb-3 mt-3">
                 <fieldset class="starability-slot">
-                    <!-- <label for="rating" class="form-label">Rating</label> -->
                     <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="1" checked aria-label="No rating." />
                     <input type="radio" id="first-rate1" name="review[rating]" value="1" />
                     <label for="first-rate1" title="Terrible">1 star</label>
@@ -79,7 +82,7 @@
         <% } %>
         <hr>
 
-        <% if(listing.reviews.length > 0) { %>
+        <% if(listing.reviews && listing.reviews.length > 0) { %>
         <div class="row g-3">
             <p><b>All Reviews</b></p>
             <% for (let review of listing.reviews) { %>
@@ -89,15 +92,19 @@
                         <h5 class="card-title">@<%= review.author ? review.author.username : 'Unknown' %></h5>
                         <p class="starability-result card-text" data-rating= <%= review.rating %>></p>
                         <b><p class="card-text review-comment"><%= review.comment %></p></b>
-                        
                     </div>
                     <div class="card-footer bg-transparent border-0">
-                        
+                        <% 
+                            const isReviewAuthor = currUser && review.author && review.author._id && review.author._id.toString() === currUser._id.toString();
+                            if (isReviewAuthor || isAdminUser) { 
+                        %>
                         <form class="mb-0" method="post" action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE">
                             <input type="hidden" name="_method" value="DELETE" />
-                            <button class="btn btn-sm btn-dark">Delete</button>
+                            <button class="btn btn-sm btn-dark">
+                                Delete <%= isAdminUser && !isReviewAuthor ? '(Admin)' : '' %>
+                            </button>
                         </form>
-                
+                        <% } %>
                     </div>
                 </div>
             </div>
